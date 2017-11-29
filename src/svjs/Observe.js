@@ -3,9 +3,11 @@
  * Date: 26.06.17
  */
 
-const ARRAY_MANIPULATION_METHODS = [
-    'copyWithin', 'fill', 'pop', 'push', 'reverse', 'shift', 'unshift', 'sort', 'splice'
-];
+const collectionMutationMethods = {
+    array: ["copyWithin", "fill", "pop", "push", "reverse", "shift", "unshift", "sort", "splice"],
+    set: ["add", "clear", "delete"],
+    map: ["set", "clear", "delete"]
+};
 
 // noinspection JSUnusedGlobalSymbols
 export function debounce(func, context, wait) {
@@ -85,7 +87,7 @@ export class Observe {
                 object.observedPostFunctions[functionName].forEach(function (callback) {
                     const params = {functionName: functionName, arguments: functionArguments, returnValue: returnValue};
                     if (async) {
-                        setTimeout(() => { // async
+                        setTimeout(() => {
                             callback(params);
                         });
                     } else {
@@ -112,6 +114,7 @@ export class Observe {
      * @param async
      */
     static property(object, propertyName, callback, async = true) {
+        let isCollection = false;
         if (object.observedProperties === undefined) {
             object.observedProperties = {};
         }
@@ -122,25 +125,38 @@ export class Observe {
             object.observedProperties[propertyName] = {
                 value: object[propertyName],
                 observers: new Set()
-            };/*
-            if ($.isArray(object[propertyName])) { // handling for arrays
-                const oldSize = object[propertyName].length;
-                ARRAY_MANIPULATION_METHODS.forEach(function (methodName) {
+            };
+
+            const property = object[propertyName];
+            let mutationMethods = null;
+            if(property instanceof Array) {
+                isCollection = true;
+                mutationMethods = collectionMutationMethods.array;
+            } else if(property instanceof Set || property instanceof WeakSet) {
+                isCollection = true;
+                mutationMethods = collectionMutationMethods.set;
+            } else if(property instanceof Map || property instanceof WeakMap) {
+                isCollection = true;
+                mutationMethods = collectionMutationMethods.set;
+            }
+            if (isCollection) { // handling for Collections
+                mutationMethods.forEach(function (methodName) {
                     object[propertyName][methodName] = function () {
-                        const newSize = Array.prototype[methodName].apply(this, arguments);
+                        // object[propertyName].constructor.prototype[methodName] is Array or Set or...
+                        object[propertyName].constructor.prototype[methodName].apply(this, arguments);
                         object.observedProperties[propertyName].observers.forEach(function (observer) {
+                            const params = {propertyName: propertyName, newValue: object[propertyName]};
                             if (async) {
-                                setTimeout(() => { // async
-                                    observer(propertyName, oldSize, newSize); // call each addObserver when array changed
+                                setTimeout(() => {
+                                    observer(params);
                                 });
                             } else {
-                                observer(propertyName, oldSize, newSize);
+                                observer(params);
                             }
                         });
-                        return newSize;
                     };
                 });
-            } else */ if (delete object[propertyName]) {
+            } else if (delete object[propertyName]) { // handling for simple properties
                 Object.defineProperty(object, propertyName, {
                     get: function () {
                         return object.observedProperties[propertyName].value;
@@ -152,7 +168,7 @@ export class Observe {
                             object.observedProperties[propertyName].observers.forEach(function (callback) {
                                 const params = {propertyName: propertyName, oldValue: oldValue, newValue: newValue};
                                 if (async) {
-                                    setTimeout(() => { // async
+                                    setTimeout(() => {
                                         callback(params);
                                     });
                                 } else {
@@ -165,20 +181,11 @@ export class Observe {
                     configurable: true
                 });
             } else {
-                console.error("Error Observe.property ", propertyName);
+                console.error("Error: Observe.property", propertyName, "failed");
             }
         }
         // add addObserver
         object.observedProperties[propertyName].observers.add(callback);
-        // initial call
-        const params = {propertyName: propertyName, oldValue: null, newValue: object.observedProperties[propertyName].value};
-        if (async) {
-            setTimeout(() => { // async
-                callback(params);
-            });
-        } else {
-            callback(params);
-        }
         return {
             remove: () => {
                 object.observedProperties[propertyName].observers.delete(callback);

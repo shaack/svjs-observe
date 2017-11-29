@@ -6,8 +6,9 @@
 export class ModelMock {
 
     constructor() {
-        this.property1 = 10;
-        this.property2 = 20;
+        this.property = 10;
+        this.array = ["this", "is", "an", "array"];
+        this.set = new Set().add("this", "is", "a", "Set");
     }
 
     add(param1, param2) {
