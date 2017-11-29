@@ -7,7 +7,7 @@ export class ModelMock {
 
     constructor() {
         this.property1 = 10;
-        this.property2 = 10;
+        this.property2 = 20;
     }
 
     add(param1, param2) {
