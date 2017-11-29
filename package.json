@@ -1,0 +1,22 @@
+{
+  "name": "svjs-observe",
+  "version": "1.0.0",
+  "description": "Watch property changes and intercept function calls of JavaScript objects",
+  "main": "src/svjs/Observe.js",
+  "scripts": {
+    "test": "echo \"Run test/index.html in Browser to test\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shaack/svjs-observe.git"
+  },
+  "author": "Stefan Haack (http://shaack.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/shaack/svjs-observe/issues"
+  },
+  "homepage": "https://github.com/shaack/svjs-observe#readme",
+  "devDependencies": {
+    "svjs-test": "^1.1.0"
+  }
+}
