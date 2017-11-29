@@ -137,15 +137,16 @@ export class Observe {
                 mutationMethods = collectionMutationMethods.set;
             } else if(property instanceof Map || property instanceof WeakMap) {
                 isCollection = true;
-                mutationMethods = collectionMutationMethods.set;
+                mutationMethods = collectionMutationMethods.map;
             }
             if (isCollection) { // handling for Collections
                 mutationMethods.forEach(function (methodName) {
                     object[propertyName][methodName] = function () {
                         // object[propertyName].constructor.prototype[methodName] is Array or Set or...
                         object[propertyName].constructor.prototype[methodName].apply(this, arguments);
+                        const methodArguments = arguments;
                         object.observedProperties[propertyName].observers.forEach(function (observer) {
-                            const params = {propertyName: propertyName, newValue: object[propertyName]};
+                            const params = {propertyName: propertyName, methodName: methodName, arguments: methodArguments, newValue: object[propertyName]};
                             if (async) {
                                 setTimeout(() => {
                                     observer(params);
