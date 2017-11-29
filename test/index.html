@@ -6,8 +6,12 @@
 </head>
 <body>
 <script type="module">
-    import {TestObserve} from "./TestObserve.js"
-    TestObserve.run();
+    import {TestObservePreFunction} from "./TestObservePreFunction.js"
+    import {TestObservePostFunction} from "./TestObservePostFunction.js"
+    import {TestObserveProperty} from "./TestObserveProperty.js"
+    TestObservePreFunction.run();
+    TestObservePostFunction.run();
+    TestObserveProperty.run();
 </script>
 </body>
 </html>
