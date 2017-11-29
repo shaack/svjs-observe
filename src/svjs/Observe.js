@@ -104,6 +104,13 @@ export class Observe {
         }
     }
 
+    /**
+     * Observe properties, also arrays and other collections.
+     * @param object
+     * @param propertyName
+     * @param callback
+     * @param async
+     */
     static property(object, propertyName, callback, async = true) {
         if (object.observedProperties === undefined) {
             object.observedProperties = {};
@@ -115,7 +122,7 @@ export class Observe {
             object.observedProperties[propertyName] = {
                 value: object[propertyName],
                 observers: new Set()
-            };
+            };/*
             if ($.isArray(object[propertyName])) { // handling for arrays
                 const oldSize = object[propertyName].length;
                 ARRAY_MANIPULATION_METHODS.forEach(function (methodName) {
@@ -133,7 +140,7 @@ export class Observe {
                         return newSize;
                     };
                 });
-            } else if (delete object[propertyName]) {
+            } else */ if (delete object[propertyName]) {
                 Object.defineProperty(object, propertyName, {
                     get: function () {
                         return object.observedProperties[propertyName].value;
@@ -143,12 +150,13 @@ export class Observe {
                         if (newValue !== oldValue) {
                             object.observedProperties[propertyName].value = newValue;
                             object.observedProperties[propertyName].observers.forEach(function (callback) {
+                                const params = {propertyName: propertyName, oldValue: oldValue, newValue: newValue};
                                 if (async) {
                                     setTimeout(() => { // async
-                                        callback(propertyName, oldValue, newValue);
+                                        callback(params);
                                     });
                                 } else {
-                                    callback(propertyName, oldValue, newValue);
+                                    callback(params);
                                 }
                             });
                         }
@@ -161,7 +169,20 @@ export class Observe {
             }
         }
         // add addObserver
-        object.observedProperties[propertyName].observers.push(callback);
-        callback(propertyName, null, object.observedProperties[propertyName].value);
+        object.observedProperties[propertyName].observers.add(callback);
+        // initial call
+        const params = {propertyName: propertyName, oldValue: null, newValue: object.observedProperties[propertyName].value};
+        if (async) {
+            setTimeout(() => { // async
+                callback(params);
+            });
+        } else {
+            callback(params);
+        }
+        return {
+            remove: () => {
+                object.observedProperties[propertyName].observers.delete(callback);
+            }
+        }
     }
 }
