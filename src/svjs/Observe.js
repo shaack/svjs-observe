@@ -10,7 +10,7 @@ const collectionMutationMethods = {
 };
 
 // noinspection JSUnusedGlobalSymbols
-export function debounce(func, context, wait) {
+export function debounce(context, func, wait) {
     let timer = null;
     return function () {
         let args = arguments;
@@ -27,12 +27,25 @@ export class Observe {
      * Intercept function call, before function is executed. Can manipulate
      * arguments in callback, if async = false.
      * @param object
-     * @param functionName
+     * @param functionName allows multiple names as array
      * @param callback
      * @param async
      * @returns Object with `remove` function to remove the interceptor
      */
     static preFunction(object, functionName, callback, async = true) {
+        if(Array.isArray(functionName)) {
+            let removes = [];
+            functionName.forEach((functionNameItem) => {
+                removes.push(Observe.preFunction(object, functionNameItem, callback, async));
+            });
+            return {
+                remove: () => {
+                    removes.forEach((remove) => {
+                        remove.remove();
+                    })
+                }
+            };
+        }
         if (object.observedPreFunctions === undefined) {
             object.observedPreFunctions = {};
         }
@@ -69,12 +82,25 @@ export class Observe {
      * Intercept function call, after function is executed. Can manipulate
      * returnValue in callback, if async = false.
      * @param object
-     * @param functionName
+     * @param functionName allows multiple names as array
      * @param callback
      * @param async
      * @returns Object with `remove` function to remove the interceptor
      */
     static postFunction(object, functionName, callback, async = true) {
+        if(Array.isArray(functionName)) {
+            let removes = [];
+            functionName.forEach((functionNameItem) => {
+                removes.push(Observe.postFunction(object, functionNameItem, callback, async));
+            });
+            return {
+                remove: () => {
+                    removes.forEach((remove) => {
+                        remove.remove();
+                    })
+                }
+            };
+        }
         if (object.observedPostFunctions === undefined) {
             object.observedPostFunctions = {};
         }
@@ -109,11 +135,24 @@ export class Observe {
     /**
      * Observe properties, also arrays and other collections.
      * @param object
-     * @param propertyName
+     * @param propertyName allows multiple names as array
      * @param callback
      * @param async
      */
     static property(object, propertyName, callback, async = true) {
+        if(Array.isArray(propertyName)) {
+            let removes = [];
+            propertyName.forEach((propertyNameItem) => {
+                removes.push(Observe.property(object, propertyNameItem, callback, async));
+            });
+            return {
+                remove: () => {
+                    removes.forEach((remove) => {
+                        remove.remove();
+                    })
+                }
+            };
+        }
         let isCollection = false;
         if (object.observedProperties === undefined) {
             object.observedProperties = {};
