@@ -8,7 +8,7 @@ import {ModelMock} from "./mocks/ModelMock.js";
 
 export class TestObservePreFunction extends Test {
 
-    testPreFunctionSync() {
+    testPreFunction() {
         const mock = new ModelMock();
         let callbackCalled = false;
         const result1 = mock.add(3, 4);
@@ -33,7 +33,7 @@ export class TestObservePreFunction extends Test {
         Test.assertEquals(11, result3);
     }
 
-    testPreFunctionSyncModifyArgument() {
+    testPreFunctionModifyArgument() {
         const mock = new ModelMock();
         Observe.preFunction(mock, "add", (params) => {
             Test.assertEquals("add", params.functionName);
@@ -42,36 +42,5 @@ export class TestObservePreFunction extends Test {
         }, false); // mode synced
         const result = mock.add(1, 4);
         Test.assertEquals(3, result);
-    }
-
-    testPreFunctionAsync() {
-        const mock = new ModelMock();
-        let callbackCalled = false;
-        let callbackCallCount = 0;
-        const result1 = mock.add(3, 4);
-        Test.assert(!callbackCalled);
-        Test.assertEquals(7, result1);
-
-        // test callback
-        let observer = Observe.preFunction(mock, "add", (params) => {
-            callbackCalled = true;
-            callbackCallCount++;
-            Test.assertEquals("add", params.functionName);
-            Test.assertEquals(4, params.arguments[1]);
-        }); // mode async
-        const result2 = mock.add(1, 4);
-        Test.assertEquals(5, result2);
-        Test.assert(!callbackCalled);
-        setTimeout(() => { // wait one tick for async
-            Test.assert(callbackCalled); // you can see this only in console
-            Test.assertEquals(1, callbackCallCount);
-        });
-
-        // remove callback
-        observer.remove();
-        callbackCalled = false;
-        const result3 = mock.add(4, 7);
-        Test.assert(!callbackCalled);
-        Test.assertEquals(11, result3);
     }
 }

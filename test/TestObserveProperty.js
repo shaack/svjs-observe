@@ -10,7 +10,7 @@ import {debounce} from "../src/svjs/Observe.js";
 
 export class TestObserveProperty extends Test {
 
-    testPropertySync() {
+    testProperty() {
         const mock = new ModelMock();
         let callbackCallCount = 0;
         mock.property = 12;
@@ -40,46 +40,13 @@ export class TestObserveProperty extends Test {
         mock.property = 10;
     }
 
-    testPropertyAsync() {
-        const mock = new ModelMock();
-        let callbackCallCount = 0;
-        mock.property = 8;
-        Test.assertEquals(0, callbackCallCount);
-        Test.assertEquals(8, mock.property);
-
-        // test callback
-        let observer = Observe.property(mock, "property", (params) => {
-            callbackCallCount++;
-            // console.log("testPropertyAsync params", params);
-            if (callbackCallCount === 1) {
-                Test.assertEquals("property", params.propertyName);
-                Test.assertEquals(8, params.oldValue);
-                Test.assertEquals(33, params.newValue);
-            } else {
-                assert(false);
-            }
-        }); // mode async
-
-        Test.assertEquals(0, callbackCallCount);
-        mock.property = 33;
-
-        Test.assertEquals(0, callbackCallCount);
-        // remove callback
-        observer.remove();
-        mock.property = 10;
-
-        setTimeout(() => {
-            Test.assertEquals(1, callbackCallCount);
-        });
-    }
-
-    testArraySync() {
+    testArray() {
         const mock = new ModelMock();
         let callbackCallCount = 0;
         mock.array[4] = "ok";
         Test.assertEquals(0, callbackCallCount);
         Test.assertEquals(5, mock.array.length);
-        let observer = Observe.property(mock, "array", (params) => {
+        Observe.property(mock, "array", (params) => {
             callbackCallCount++;
             console.log("testArraySync params", params);
             if (callbackCallCount === 1) {
@@ -99,12 +66,12 @@ export class TestObserveProperty extends Test {
         Test.assertEquals(2, callbackCallCount);
     }
 
-    testSetSync() {
+    testSet() {
         const mock = new ModelMock();
         let callbackCallCount = 0;
         console.log(mock.set);
         Test.assertEquals(4, mock.set.size);
-        let observer = Observe.property(mock, "set", (params) => {
+        Observe.property(mock, "set", (params) => {
             callbackCallCount++;
             console.log("testSetSync params", params);
             if (callbackCallCount === 1) {
@@ -120,12 +87,12 @@ export class TestObserveProperty extends Test {
         Test.assertEquals(1, callbackCallCount);
     }
 
-    testMapSync() {
+    testMap() {
         const mock = new ModelMock();
         let callbackCallCount = 0;
         console.log(mock.map);
         Test.assertEquals(2, mock.map.size);
-        let observer = Observe.property(mock, "map", (params) => {
+        Observe.property(mock, "map", (params) => {
             callbackCallCount++;
             console.log("testMapSync params", params);
             if (callbackCallCount === 1) {
@@ -148,36 +115,7 @@ export class TestObserveProperty extends Test {
         Test.assertEquals(2, callbackCallCount);
     }
 
-    testArrayAsync() {
-        const mock = new ModelMock();
-        let callbackCallCount = 0;
-        mock.array[4] = "ok";
-        Test.assertEquals(0, callbackCallCount);
-        Test.assertEquals(5, mock.array.length);
-        let observer = Observe.property(mock, "array", (params) => {
-            callbackCallCount++;
-            console.log("testArraySync params", params);
-            if (callbackCallCount === 1) {
-                Test.assertEquals("array", params.propertyName);
-                Test.assertEquals(7, params.newValue.length);
-                Test.assertEquals("push", params.methodName);
-                Test.assertEquals("hello", params.arguments[0]);
-            } else if (callbackCallCount === 2) {
-                Test.assertEquals(7, params.newValue.length);
-                Test.assertEquals("world", params.arguments[0]);
-            } else {
-                Test.assert(false);
-            }
-        }, true);
-        mock.array.push("hello");
-        mock.array.push("world");
-        Test.assertEquals(0, callbackCallCount);
-        setTimeout(() => {
-            Test.assertEquals(2, callbackCallCount);
-        })
-    }
-
-    testMulti() {
+    testMultipleProperties() {
         const mock = new ModelMock();
         let callbackCallCount = 0;
         let observer = Observe.property(mock, ["array", "set", "map"], (params) => {
@@ -213,7 +151,7 @@ export class TestObserveProperty extends Test {
         Test.assertEquals(3, callbackCallCount);
     }
 
-    testMultiDebounced() {
+    testMultiplePropertiesDebounced() {
         const mock = new ModelMock();
         let callbackCallCount = 0;
         let debounced = debounce(this, (params) => {
@@ -231,7 +169,7 @@ export class TestObserveProperty extends Test {
             Test.assertEquals(5, mock.array.length);
             Test.assertEquals(5, mock.set.size);
         },  50);
-        let observer = Observe.property(mock, ["array", "set", "map"], debounced, false);
+        Observe.property(mock, ["array", "set", "map"], debounced, false);
         mock.array.push("hello");
         mock.set.add("world");
         mock.map.set("three", "add value");

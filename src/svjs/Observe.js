@@ -25,18 +25,17 @@ export class Observe {
 
     /**
      * Intercept function call, before function is executed. Can manipulate
-     * arguments in callback, if async = false.
+     * arguments in callback.
      * @param object
      * @param functionName allows multiple names as array
      * @param callback
-     * @param async
      * @returns Object with `remove` function to remove the interceptor
      */
-    static preFunction(object, functionName, callback, async = true) {
-        if(Array.isArray(functionName)) {
+    static preFunction(object, functionName, callback) {
+        if (Array.isArray(functionName)) {
             let removes = [];
             functionName.forEach((functionNameItem) => {
-                removes.push(Observe.preFunction(object, functionNameItem, callback, async));
+                removes.push(Observe.preFunction(object, functionNameItem, callback));
             });
             return {
                 remove: () => {
@@ -56,15 +55,9 @@ export class Observe {
                 let functionArguments = arguments;
                 object.observedPreFunctions[functionName].forEach(function (callback) {
                     const params = {functionName: functionName, arguments: functionArguments};
-                    if (async) {
-                        setTimeout(() => {
-                            callback(params);
-                        });
-                    } else {
-                        const callbackReturn = callback(params);
-                        if (callbackReturn) {
-                            functionArguments = callbackReturn;
-                        }
+                    const callbackReturn = callback(params);
+                    if (callbackReturn) {
+                        functionArguments = callbackReturn;
                     }
                 });
                 return originalMethod.apply(object, functionArguments);
@@ -80,18 +73,17 @@ export class Observe {
 
     /**
      * Intercept function call, after function is executed. Can manipulate
-     * returnValue in callback, if async = false.
+     * returnValue in callback.
      * @param object
      * @param functionName allows multiple names as array
      * @param callback
-     * @param async
      * @returns Object with `remove` function to remove the interceptor
      */
-    static postFunction(object, functionName, callback, async = true) {
-        if(Array.isArray(functionName)) {
+    static postFunction(object, functionName, callback) {
+        if (Array.isArray(functionName)) {
             let removes = [];
             functionName.forEach((functionNameItem) => {
-                removes.push(Observe.postFunction(object, functionNameItem, callback, async));
+                removes.push(Observe.postFunction(object, functionNameItem, callback));
             });
             return {
                 remove: () => {
@@ -112,14 +104,8 @@ export class Observe {
                 const functionArguments = arguments;
                 object.observedPostFunctions[functionName].forEach(function (callback) {
                     const params = {functionName: functionName, arguments: functionArguments, returnValue: returnValue};
-                    if (async) {
-                        setTimeout(() => {
-                            callback(params);
-                        });
-                    } else {
-                        callback(params);
-                        returnValue = params.returnValue; // modifiable if called synced
-                    }
+                    callback(params);
+                    returnValue = params.returnValue; // modifiable if called synced
                 });
                 return returnValue;
             };
@@ -137,13 +123,12 @@ export class Observe {
      * @param object
      * @param propertyName allows multiple names as array
      * @param callback
-     * @param async
      */
-    static property(object, propertyName, callback, async = true) {
-        if(Array.isArray(propertyName)) {
+    static property(object, propertyName, callback) {
+        if (Array.isArray(propertyName)) {
             let removes = [];
             propertyName.forEach((propertyNameItem) => {
-                removes.push(Observe.property(object, propertyNameItem, callback, async));
+                removes.push(Observe.property(object, propertyNameItem, callback));
             });
             return {
                 remove: () => {
@@ -168,13 +153,13 @@ export class Observe {
 
             const property = object[propertyName];
             let mutationMethods = null;
-            if(property instanceof Array) {
+            if (property instanceof Array) {
                 isCollection = true;
                 mutationMethods = collectionMutationMethods.array;
-            } else if(property instanceof Set || property instanceof WeakSet) {
+            } else if (property instanceof Set || property instanceof WeakSet) {
                 isCollection = true;
                 mutationMethods = collectionMutationMethods.set;
-            } else if(property instanceof Map || property instanceof WeakMap) {
+            } else if (property instanceof Map || property instanceof WeakMap) {
                 isCollection = true;
                 mutationMethods = collectionMutationMethods.map;
             }
@@ -185,14 +170,13 @@ export class Observe {
                         object[propertyName].constructor.prototype[methodName].apply(this, arguments);
                         const methodArguments = arguments;
                         object.observedProperties[propertyName].observers.forEach(function (observer) {
-                            const params = {propertyName: propertyName, methodName: methodName, arguments: methodArguments, newValue: object[propertyName]};
-                            if (async) {
-                                setTimeout(() => {
-                                    observer(params);
-                                });
-                            } else {
-                                observer(params);
-                            }
+                            const params = {
+                                propertyName: propertyName,
+                                methodName: methodName,
+                                arguments: methodArguments,
+                                newValue: object[propertyName]
+                            };
+                            observer(params);
                         });
                     };
                 });
@@ -207,13 +191,7 @@ export class Observe {
                             object.observedProperties[propertyName].value = newValue;
                             object.observedProperties[propertyName].observers.forEach(function (callback) {
                                 const params = {propertyName: propertyName, oldValue: oldValue, newValue: newValue};
-                                if (async) {
-                                    setTimeout(() => {
-                                        callback(params);
-                                    });
-                                } else {
-                                    callback(params);
-                                }
+                                callback(params);
                             });
                         }
                     },
