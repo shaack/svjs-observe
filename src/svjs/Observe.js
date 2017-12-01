@@ -202,7 +202,6 @@ export class Observe {
                 console.error("Error: Observe.property", propertyName, "failed");
             }
         }
-        // add addObserver
         object.observedProperties[propertyName].observers.add(callback);
         return {
             remove: () => {
