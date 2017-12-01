@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/shaack/svjs-observe#readme",
   "devDependencies": {
-    "svjs-test": "^1.1.1"
+    "svjs-test": "^1.2.0"
   }
 }
