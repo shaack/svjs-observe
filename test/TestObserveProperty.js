@@ -8,6 +8,10 @@ import {Observe} from "../src/svjs/Observe.js";
 import {ModelMock} from "./mocks/ModelMock.js";
 import {debounce} from "../src/svjs/Observe.js";
 
+Array.prototype.set = function (index, value) {
+    return this.splice(index, 1, value);
+};
+
 export class TestObserveProperty extends Test {
 
     testProperty() {
@@ -48,7 +52,6 @@ export class TestObserveProperty extends Test {
         Test.assertEquals(5, mock.array.length);
         Observe.property(mock, "array", (params) => {
             callbackCallCount++;
-            console.log("testArraySync params", params);
             if (callbackCallCount === 1) {
                 Test.assertEquals("array", params.propertyName);
                 Test.assertEquals(6, params.newValue.length);
@@ -57,13 +60,19 @@ export class TestObserveProperty extends Test {
             } else if (callbackCallCount === 2) {
                 Test.assertEquals(7, params.newValue.length);
                 Test.assertEquals("world", params.arguments[0]);
+            } else if (callbackCallCount === 3) {
+                Test.assertEquals(7, params.newValue.length);
+                Test.assertEquals("foo", params.arguments[2]);
             } else {
                 Test.assert(false);
             }
         }, false);
         mock.array.push("hello");
         mock.array.push("world");
-        Test.assertEquals(2, callbackCallCount);
+        mock.array.set(3, "foo"); // mock.array.splice(3, 1, "foo");
+        Test.assertEquals("foo", mock.array[3]);
+        Test.assertEquals("this", mock.array[0]);
+        Test.assertEquals(3, callbackCallCount);
     }
 
     testSet() {
@@ -155,7 +164,6 @@ export class TestObserveProperty extends Test {
         const mock = new ModelMock();
         let callbackCallCount = 0;
         let debounced = debounce(this, (params) => {
-            console.log("CALL debouced");
             callbackCallCount++;
             if (callbackCallCount === 1) {
                 Test.assertEquals("map", params.propertyName);
@@ -168,19 +176,45 @@ export class TestObserveProperty extends Test {
             }
             Test.assertEquals(5, mock.array.length);
             Test.assertEquals(5, mock.set.size);
-        },  50);
+        }, 50);
         Observe.property(mock, ["array", "set", "map"], debounced, false);
         mock.array.push("hello");
         mock.set.add("world");
         mock.map.set("three", "add value");
         Test.assertEquals(0, callbackCallCount);
         setTimeout(() => {
-            console.log("callbackCallCount", callbackCallCount);
+            console.log("## testMultiplePropertiesDebounced debounced call (async)");
+            console.log("callbackCallCount 10ms", callbackCallCount);
             Test.assertEquals(0, callbackCallCount);
         }, 10);
         setTimeout(() => {
-            console.log("callbackCallCount", callbackCallCount);
+            console.log("callbackCallCount 100ms", callbackCallCount);
             Test.assertEquals(1, callbackCallCount);
         }, 100);
+    }
+
+    testNested() {
+        const mock = new ModelMock();
+        let callbackCallCount = 0;
+        Observe.property(mock.nested, "one", (params) => {
+            callbackCallCount++;
+        });
+        mock.nested.one = 42;
+        Test.assertEquals(1, callbackCallCount);
+    }
+
+    testMultiArray() {
+        const mock = new ModelMock();
+        let callbackCallCount = 0;
+        let callback = (params) => {
+            callbackCallCount++;
+            console.log("callback", params);
+        };
+        for (let i = 0; i < mock.multiArray.length; i++) {
+            Observe.property(mock.multiArray, i, callback);
+        }
+        mock.multiArray[1].splice(1, 1, 42);
+        Test.assertEquals(1, callbackCallCount);
+        Test.assertEquals(42, mock.multiArray[1][1]);
     }
 }
