@@ -10,7 +10,7 @@ const collectionMutationMethods = {
 };
 
 // noinspection JSUnusedGlobalSymbols
-export function debounce(context, func, wait) {
+export function debounce(context, func, wait = 0) {
     let timer = null;
     return function () {
         let args = arguments;
