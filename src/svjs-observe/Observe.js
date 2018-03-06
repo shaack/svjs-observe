@@ -9,18 +9,6 @@ const collectionMutationMethods = {
     map: ["set", "clear", "delete"]
 };
 
-// noinspection JSUnusedGlobalSymbols
-export function debounce(context, func, wait = 0) {
-    let timer = null;
-    return function () {
-        let args = arguments;
-        window.clearTimeout(timer);
-        timer = setTimeout(function () {
-            func.apply(context, args);
-        }, wait);
-    };
-}
-
 export class Observe {
 
     /**

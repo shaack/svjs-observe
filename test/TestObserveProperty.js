@@ -4,9 +4,8 @@
  */
 
 import {Test} from "../node_modules/svjs-test/src/svjs/Test.js"
-import {Observe} from "../src/svjs/Observe.js";
+import {Observe} from "../src/svjs-observe/Observe.js";
 import {ModelMock} from "./mocks/ModelMock.js";
-import {debounce} from "../src/svjs/Observe.js";
 
 Array.prototype.set = function (index, value) {
     return this.splice(index, 1, value);
@@ -158,39 +157,6 @@ export class TestObserveProperty extends Test {
         mock.set.add("world");
         mock.map.set("three", "add value");
         Test.assertEquals(3, callbackCallCount);
-    }
-
-    testMultiplePropertiesDebounced() {
-        const mock = new ModelMock();
-        let callbackCallCount = 0;
-        let debounced = debounce(this, (params) => {
-            callbackCallCount++;
-            if (callbackCallCount === 1) {
-                Test.assertEquals("map", params.propertyName);
-                Test.assertEquals(3, params.newValue.size);
-                Test.assertEquals("set", params.methodName);
-                Test.assertEquals("three", params.arguments[0]);
-                Test.assertEquals("add value", params.arguments[1]);
-            } else {
-                Test.assert(false);
-            }
-            Test.assertEquals(5, mock.array.length);
-            Test.assertEquals(5, mock.set.size);
-        }, 50);
-        Observe.property(mock, ["array", "set", "map"], debounced, false);
-        mock.array.push("hello");
-        mock.set.add("world");
-        mock.map.set("three", "add value");
-        Test.assertEquals(0, callbackCallCount);
-        setTimeout(() => {
-            console.log("## testMultiplePropertiesDebounced debounced call (async)");
-            console.log("callbackCallCount 10ms", callbackCallCount);
-            Test.assertEquals(0, callbackCallCount);
-        }, 10);
-        setTimeout(() => {
-            console.log("callbackCallCount 100ms", callbackCallCount);
-            Test.assertEquals(1, callbackCallCount);
-        }, 100);
     }
 
     testNested() {

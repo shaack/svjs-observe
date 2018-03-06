@@ -3,7 +3,7 @@
  * Date: 29.11.2017
  */
 import {Test} from "../node_modules/svjs-test/src/svjs/Test.js"
-import {Observe} from "../src/svjs/Observe.js";
+import {Observe} from "../src/svjs-observe/Observe.js";
 import {ModelMock} from "./mocks/ModelMock.js";
 
 export class TestObservePreFunction extends Test {
