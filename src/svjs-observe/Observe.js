@@ -87,16 +87,20 @@ export class Observe {
                 }
             }
         }
-        if (object.observedPostFunctions === undefined) {
-            object.observedPostFunctions = {}
+        if (!registry.has(object)) {
+            registry.set(object, {})
         }
-        if (object.observedPostFunctions[functionName] === undefined) {
-            object.observedPostFunctions[functionName] = new Set()
+        const registryObject = registry.get(object)
+        if (registryObject.observedPostFunctions === undefined) {
+            registryObject.observedPostFunctions = new Map()
+        }
+        if (!registryObject.observedPostFunctions.has(functionName)) {
+            registryObject.observedPostFunctions.set(functionName, new Set())
             const originalMethod = object[functionName]
             object[functionName] = function () {
                 let returnValue = originalMethod.apply(object, arguments)
                 const functionArguments = arguments
-                object.observedPostFunctions[functionName].forEach(function (callback) {
+                registryObject.observedPostFunctions.get(functionName).forEach(function (callback) {
                     const params = {functionName: functionName, arguments: functionArguments, returnValue: returnValue}
                     callback(params)
                     returnValue = params.returnValue // modifiable if called synced
@@ -104,10 +108,10 @@ export class Observe {
                 return returnValue
             }
         }
-        object.observedPostFunctions[functionName].add(callback)
+        registryObject.observedPostFunctions.get(functionName).add(callback)
         return {
             remove: () => {
-                object.observedPostFunctions[functionName].delete(callback)
+                registryObject.observedPostFunctions.get(functionName).delete(callback)
             }
         }
     }
