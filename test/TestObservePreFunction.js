@@ -36,7 +36,6 @@ export class TestObservePreFunction extends Test {
     testPreFunctionModifyArgument() {
         const mock = new ModelMock();
         Observe.preFunction(mock, "add", (params) => {
-            console.log("preFunction", params)
             Test.assertEquals("add", params.functionName)
             Test.assertEquals(4, params.arguments[1])
             params.arguments[1] = 2
