@@ -1,6 +1,5 @@
 /**
- * Author: shaack
- * Date: 26.06.17
+ * Author: Stefan Haack https://shaack.com
  */
 
 const collectionMutationMethods = {
