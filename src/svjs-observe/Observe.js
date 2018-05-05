@@ -8,6 +8,8 @@ const collectionMutationMethods = {
     map: ["set", "clear", "delete"]
 };
 
+const registry = new Map()
+
 export class Observe {
 
     /**
@@ -32,16 +34,23 @@ export class Observe {
                 }
             };
         }
-        if (object.observedPreFunctions === undefined) {
-            object.observedPreFunctions = {};
+        if (!registry.has(object)) {
+            registry.set(object, {});
         }
-        if (object.observedPreFunctions[functionName] === undefined) {
-            object.observedPreFunctions[functionName] = new Set();
+        const registryObject = registry.get(object);
+        if (registryObject.observedPreFunctions === undefined) {
+            registryObject.observedPreFunctions = new Map();
+        }
+        if (!registryObject.observedPreFunctions.has(functionName)) {
+            registryObject.observedPreFunctions.set(functionName, new Set())
             const originalMethod = object[functionName];
             object[functionName] = function () {
                 let functionArguments = arguments;
-                object.observedPreFunctions[functionName].forEach(function (callback) {
+                registryObject.observedPreFunctions.get(functionName).forEach(function (callback) {
+                    console.log("lilili", functionName);
                     const params = {functionName: functionName, arguments: functionArguments};
+                    console.log("params", params)
+                    console.log("callback", callback)
                     const callbackReturn = callback(params);
                     if (callbackReturn) {
                         functionArguments = callbackReturn;
@@ -50,10 +59,11 @@ export class Observe {
                 return originalMethod.apply(object, functionArguments);
             };
         }
-        object.observedPreFunctions[functionName].add(callback);
+        console.log("adding callback", callback);
+        registryObject.observedPreFunctions.get(functionName).add(callback);
         return {
             remove: () => {
-                object.observedPreFunctions[functionName].delete(callback);
+                registryObject.observedPreFunctions.get(functionName).delete(callback);
             }
         }
     };
