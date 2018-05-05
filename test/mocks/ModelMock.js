@@ -1,8 +1,7 @@
 /**
- * Author: shaack
- * Date: 29.11.2017
+ * Author: Stefan Haack https://shaack.com
+ * License: MIT, (c) 2018 all rights reserved
  */
-
 export class ModelMock {
 
     constructor() {

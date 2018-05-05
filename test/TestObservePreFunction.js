@@ -1,6 +1,6 @@
 /**
- * Author: shaack
- * Date: 29.11.2017
+ * Author: Stefan Haack https://shaack.com
+ * License: MIT, (c) 2018 all rights reserved
  */
 import {Test} from "../node_modules/svjs-test/src/svjs/Test.js"
 import {Observe} from "../src/svjs-observe/Observe.js";

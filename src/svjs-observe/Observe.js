@@ -1,8 +1,7 @@
 /**
  * Author: Stefan Haack https://shaack.com
- * License: MIT
+ * License: MIT, (c) 2018 all rights reserved
  */
-
 const collectionMutationMethods = {
     array: ["copyWithin", "fill", "pop", "push", "reverse", "shift", "unshift", "sort", "splice"],
     set: ["add", "clear", "delete"],
