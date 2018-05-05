@@ -136,18 +136,23 @@ export class Observe {
                 }
             }
         }
-        let isCollection = false
-        if (object.observedProperties === undefined) {
-            object.observedProperties = {}
-        }
         if (!object.hasOwnProperty(propertyName)) {
             console.error("Observe.property", object, "missing property: " + propertyName)
+            return
         }
-        if (object.observedProperties[propertyName] === undefined) {
-            object.observedProperties[propertyName] = {
+        let isCollection = false
+        if (!registry.has(object)) {
+            registry.set(object, {})
+        }
+        const registryObject = registry.get(object)
+        if (registryObject.observedProperties === undefined) {
+            registryObject.observedProperties = new Map()
+        }
+        if (!registryObject.observedProperties.has(propertyName)) {
+            registryObject.observedProperties.set(propertyName, {
                 value: object[propertyName],
                 observers: new Set()
-            }
+            });
 
             const property = object[propertyName]
             let mutationMethods = null
@@ -167,7 +172,7 @@ export class Observe {
                         // object[propertyName].constructor.prototype[methodName] is Array or Set or...
                         object[propertyName].constructor.prototype[methodName].apply(this, arguments)
                         const methodArguments = arguments
-                        object.observedProperties[propertyName].observers.forEach(function (observer) {
+                        registryObject.observedProperties.get(propertyName).observers.forEach(function (observer) {
                             const params = {
                                 propertyName: propertyName,
                                 methodName: methodName,
@@ -181,13 +186,13 @@ export class Observe {
             } else if (delete object[propertyName]) { // handling for simple properties
                 Object.defineProperty(object, propertyName, {
                     get: function () {
-                        return object.observedProperties[propertyName].value
+                        return registryObject.observedProperties.get(propertyName).value
                     },
                     set: function (newValue) {
-                        const oldValue = object.observedProperties[propertyName].value
+                        const oldValue = registryObject.observedProperties.get(propertyName).value
                         if (newValue !== oldValue) {
-                            object.observedProperties[propertyName].value = newValue
-                            object.observedProperties[propertyName].observers.forEach(function (callback) {
+                            registryObject.observedProperties.get(propertyName).value = newValue
+                            registryObject.observedProperties.get(propertyName).observers.forEach(function (callback) {
                                 const params = {propertyName: propertyName, oldValue: oldValue, newValue: newValue}
                                 callback(params)
                             })
@@ -200,10 +205,10 @@ export class Observe {
                 console.error("Error: Observe.property", propertyName, "failed")
             }
         }
-        object.observedProperties[propertyName].observers.add(callback)
+        registryObject.observedProperties.get(propertyName).observers.add(callback)
         return {
             remove: () => {
-                object.observedProperties[propertyName].observers.delete(callback)
+                registryObject.observedProperties.get(propertyName).observers.delete(callback)
             }
         }
     }
