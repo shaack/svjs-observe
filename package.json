@@ -1,6 +1,6 @@
 {
   "name": "svjs-observe",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Watch property changes and intercept function calls of JavaScript objects",
   "main": "src/svjs-observe/Observe.js",
   "scripts": {
