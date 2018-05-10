@@ -1,8 +1,9 @@
 # svjs-observe
 
-An ES6 Module to observe properties, Arrays, Sets and Maps of an Object. Can also intercept function calls.
+An ES6 Module to observe properties (simple properties, Arrays, Sets and Maps) 
+of an Object. Can also intercept function calls.
 
-Observing means to call a callback-function every value change of an Object property (or function call).
+Observing means to call a callback-function every value change of an Object property.
 
 ## Methods
 
