@@ -13,7 +13,7 @@ const registry = new Map()
 export class Observe {
 
     /**
-     * Intercept a function call, before the function is executed. Can manipulate
+     * Intercept a function call before the function is executed. Can manipulate
      * arguments in callback.
      * @param object
      * @param functionName allows multiple names as array
@@ -65,7 +65,7 @@ export class Observe {
     }
 
     /**
-     * Intercept a function call, after the function is executed. Can manipulate
+     * Intercept a function call after the function is executed. Can manipulate
      * returnValue in callback.
      * @param object
      * @param functionName allows multiple names as array
